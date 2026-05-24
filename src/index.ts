@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import contactRouter from "./routes/contact";
@@ -9,6 +10,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:4321",
+    methods: ["GET", "POST"],
+  }),
+);
 app.use(express.json());
 
 const limiter = rateLimit({

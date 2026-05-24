@@ -2,22 +2,23 @@ import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
 
-const contactSchema = z.object({
+const reservationSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.email(),
   phone: z.string().optional(),
-  company: z.string().optional(),
-  interest: z.string().optional(),
+  topic: z.string().optional(),
   message: z.string().optional(),
+  date: z.iso.datetime(),
+  time: z.string().min(1),
   consent: z.boolean(),
 });
 
-export const createContact = async (
+export const createReservation = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const result = contactSchema.safeParse(req.body);
+  const result = reservationSchema.safeParse(req.body);
 
   if (!result.success) {
     res
@@ -27,8 +28,13 @@ export const createContact = async (
   }
 
   try {
-    const contact = await prisma.contact.create({ data: result.data });
-    res.status(201).json({ success: true, id: contact.id });
+    const reservation = await prisma.reservation.create({
+      data: {
+        ...result.data,
+        date: new Date(result.data.date),
+      },
+    });
+    res.status(201).json({ success: true, id: reservation.id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
+import resend from "../lib/resend";
 
 const reservationSchema = z.object({
   firstName: z.string().min(1),
@@ -34,6 +35,19 @@ export const createReservation = async (
         date: new Date(result.data.date),
       },
     });
+
+    await resend.emails.send({
+      from: "NDL Capital <onboarding@resend.dev>",
+      to: result.data.email,
+      subject: "Your call is booked — NDL Capital Group",
+      html: `
+        <h2>Hi ${result.data.firstName},</h2>
+        <p>Your call has been scheduled for ${result.data.date} at ${result.data.time}.</p>
+        <p>We will send you a Google Meet link shortly.</p>
+        <p>Best regards,<br/>NDL Capital Group</p>
+      `,
+    });
+
     res.status(201).json({ success: true, id: reservation.id });
   } catch (error) {
     console.error(error);

@@ -7,7 +7,7 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "render-build": "npm install && npm run build && npx prisma generate --config src/prisma.config.ts"
+    "render-build": "npm install && npm run build && npx prisma generate"
   },
   "repository": {
     "type": "git",

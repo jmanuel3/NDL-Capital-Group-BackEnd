@@ -5,6 +5,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import contactRouter from "./routes/contact";
 import reservationRouter from "./routes/reservation";
+import slotRoutes from "./routes/slots";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "10000", 10);
@@ -26,16 +27,18 @@ app.use(limiter);
 
 app.use("/api/contact", contactRouter);
 app.use("/api/reservation", reservationRouter);
+app.use("/api/slots", slotRoutes);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
 const server = app.listen(PORT, "0.0.0.0", () => {
-  });
+  console.log(`Server running on port ${PORT}`);
+});
 
 server.on("error", (err) => {
-
+  console.error("Server error:", err);
 });
 
 process.on("uncaughtException", (err) => {
@@ -44,7 +47,4 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled rejection:", err);
-});
-
-process.on("exit", (code) => {
 });

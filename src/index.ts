@@ -19,7 +19,7 @@ app.use(
 app.use(express.json());
 
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
 });
 app.use(limiter);
@@ -31,6 +31,20 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+const server = app.listen(PORT, "0.0.0.0", () => {
+  });
+
+server.on("error", (err) => {
+
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled rejection:", err);
+});
+
+process.on("exit", (code) => {
 });

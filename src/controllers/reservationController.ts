@@ -11,7 +11,7 @@ const reservationSchema = z.object({
   phone: z.string().optional(),
   topic: z.string().optional(),
   message: z.string().optional(),
-  date: z.iso.datetime(),
+  date: z.iso.date(),
   time: z.string().min(1),
   consent: z.boolean(),
 });
@@ -20,12 +20,12 @@ export const createReservation = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
- 
-
   const result = reservationSchema.safeParse(req.body);
 
   if (!result.success) {
-    res.status(400).json({ error: "Invalid data", details: result.error.issues });
+    res
+      .status(400)
+      .json({ error: "Invalid data", details: result.error.issues });
     return;
   }
 
@@ -46,8 +46,6 @@ export const createReservation = async (
       topic: result.data.topic,
       message: result.data.message,
     });
-
-
 
     await resend.emails.send({
       from: "NDL Capital <onboarding@resend.dev>",

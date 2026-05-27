@@ -33,7 +33,6 @@ const ALL_SLOTS = [
   "18:00",
   "18:30",
   "19:00",
-
 ];
 
 const SLOT_DURATION_MINUTES = 30;
@@ -76,17 +75,22 @@ interface CreateEventParams {
   message?: string;
 }
 
+function addMinutes(time: string, minutesToAdd: number): string {
+  const [hours, minutes] = time.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes + minutesToAdd;
+  const newHours = Math.floor(totalMinutes / 60);
+  const newMinutes = totalMinutes % 60;
+  return `${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}`;
+}
+
 export async function createReservationEvent(
   params: CreateEventParams,
 ): Promise<string> {
   const { firstName, lastName, email, date, time, topic, message } = params;
 
-  const [hours, minutes] = time.split(":").map(Number);
-  const startDate = new Date(date);
-  startDate.setHours(hours, minutes, 0, 0);
-
-  const endDate = new Date(startDate);
-  endDate.setMinutes(endDate.getMinutes() + SLOT_DURATION_MINUTES);
+  const endTime = addMinutes(time, SLOT_DURATION_MINUTES);
+  const startDateTimeStr = `${date}T${time}:00`;
+  const endDateTimeStr = `${date}T${endTime}:00`;
 
   const response = await calendar.events.insert({
     calendarId,
@@ -95,11 +99,11 @@ export async function createReservationEvent(
       summary: `NDL Capital Call — ${firstName} ${lastName}`,
       description: `Topic: ${topic || "Not specified"}\n\nMessage: ${message || "None"}\n\nClient email: ${email}`,
       start: {
-        dateTime: startDate.toISOString(),
+        dateTime: startDateTimeStr,
         timeZone: "Europe/Madrid",
       },
       end: {
-        dateTime: endDate.toISOString(),
+        dateTime: endDateTimeStr,
         timeZone: "Europe/Madrid",
       },
       attendees: [{ email }],

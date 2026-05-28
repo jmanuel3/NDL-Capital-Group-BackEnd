@@ -9,7 +9,7 @@ const reservationSchema = z.object({
   lastName: z.string().min(1),
   email: z.email(),
   phone: z.string().optional(),
-  topic: z.string().optional(),
+  topic: z.string().min(1),
   message: z.string().optional(),
   date: z.iso.date(),
   time: z.string().min(1),

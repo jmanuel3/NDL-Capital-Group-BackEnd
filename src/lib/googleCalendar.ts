@@ -62,7 +62,23 @@ export async function getAvailableSlots(dateString: string): Promise<string[]> {
     busySlots.add(`${hours}:${minutes}`);
   });
 
-  return ALL_SLOTS.filter((slot) => !busySlots.has(slot));
+  const now = new Date();
+  const madridNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Europe/Madrid" }),
+  );
+  const todayMadrid = `${madridNow.getFullYear()}-${String(madridNow.getMonth() + 1).padStart(2, "0")}-${String(madridNow.getDate()).padStart(2, "0")}`;
+  const isToday = dateString === todayMadrid;
+
+  return ALL_SLOTS.filter((slot) => {
+    if (busySlots.has(slot)) return false;
+    if (isToday) {
+      const [slotHours, slotMinutes] = slot.split(":").map(Number);
+      const slotTime = slotHours * 60 + slotMinutes;
+      const nowTime = madridNow.getHours() * 60 + madridNow.getMinutes();
+      return slotTime > nowTime;
+    }
+    return true;
+  });
 }
 
 interface CreateEventParams {

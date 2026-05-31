@@ -7,10 +7,10 @@ const contactSchema = z.object({
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   email: z.email(),
-  phone: z.string().optional(),
+  phone: z.string().min(1),
   company: z.string().optional(),
   interest: z.string().optional(),
-  message: z.string().optional(),
+  message: z.string().min(1),
   consent: z.boolean(),
 });
 

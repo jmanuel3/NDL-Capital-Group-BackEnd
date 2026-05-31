@@ -9,11 +9,14 @@ import slotRoutes from "./routes/slots";
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "10000", 10);
+const allowedOrigins = (
+  process.env.FRONTEND_URL || "http://localhost:4321"
+).split(",");
 
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:4321",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
   }),
 );

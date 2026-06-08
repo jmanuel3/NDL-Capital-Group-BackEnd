@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import resend from "../lib/resend";
+import brevo from "../lib/brevo";
 import { createReservationEvent } from "../lib/googleCalendar";
 
 const reservationSchema = z.object({
@@ -47,11 +47,11 @@ export const createReservation = async (
       message: result.data.message,
     });
 
-    await resend.emails.send({
-      from: "NDL Capital <onboarding@resend.dev>",
-      to: result.data.email,
+    await brevo.transactionalEmails.sendTransacEmail({
+      sender: { name: "NDL Capital Group", email: "info@ndlcapitalgroup.com" },
+      to: [{ email: result.data.email, name: result.data.firstName }],
       subject: "Your call is booked — NDL Capital Group",
-      html: `
+      htmlContent: `
         <h2>Hi ${result.data.firstName},</h2>
         <p>Your call has been scheduled for ${new Date(result.data.date).toLocaleDateString("en-GB")} at ${result.data.time}.</p>
         <p><strong>Google Meet link:</strong> <a href="${meetLink}">${meetLink}</a></p>

@@ -29,7 +29,6 @@ export const createContact = async (
 
   try {
     const contact = await prisma.contact.create({ data: result.data });
-
     await transporter.sendMail({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: result.data.email,
@@ -38,6 +37,19 @@ export const createContact = async (
     <h2>Hi ${result.data.firstName},</h2>
     <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
     <p>Best regards,<br/>NDL Capital Group</p>
+  `,
+    });
+    await transporter.sendMail({
+      from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
+      to: "info@ndlcapitalgroup.com",
+      subject: "New contact form submission — NDL Capital Group",
+      html: `
+    <h2>New message from ${result.data.firstName} ${result.data.lastName}</h2>
+    <p><strong>Email:</strong> ${result.data.email}</p>
+    <p><strong>Phone:</strong> ${result.data.phone}</p>
+    <p><strong>Company:</strong> ${result.data.company || "—"}</p>
+    <p><strong>Interest:</strong> ${result.data.interest || "—"}</p>
+    <p><strong>Message:</strong> ${result.data.message}</p>
   `,
     });
 

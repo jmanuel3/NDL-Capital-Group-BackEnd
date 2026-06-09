@@ -59,6 +59,22 @@ export const createReservation = async (
       `,
     });
 
+    await transporter.sendMail({
+      from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
+      to: "info@ndlcapitalgroup.com",
+      subject: "New reservation — NDL Capital Group",
+      html: `
+        <h2>New reservation from ${result.data.firstName} ${result.data.lastName}</h2>
+        <p><strong>Email:</strong> ${result.data.email}</p>
+        <p><strong>Phone:</strong> ${result.data.phone}</p>
+        <p><strong>Topic:</strong> ${result.data.topic}</p>
+        <p><strong>Date:</strong> ${new Date(result.data.date).toLocaleDateString("en-GB")}</p>
+        <p><strong>Time:</strong> ${result.data.time}</p>
+        <p><strong>Message:</strong> ${result.data.message || "—"}</p>
+        <p><strong>Google Meet link:</strong> <a href="${meetLink}">${meetLink}</a></p>
+      `,
+    });
+
     res.status(201).json({ success: true, id: reservation.id, meetLink });
   } catch (error) {
     console.error("ERROR in createReservation:", error);

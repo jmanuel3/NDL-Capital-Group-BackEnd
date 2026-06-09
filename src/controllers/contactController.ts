@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import resend from "../lib/resend";
+import transporter from "../lib/nodemailer";
 
 const contactSchema = z.object({
   firstName: z.string().min(1),
@@ -30,16 +30,15 @@ export const createContact = async (
   try {
     const contact = await prisma.contact.create({ data: result.data });
 
-    await resend.emails.send({
-      //cambiar el email por: noreply@ndlcapitalgroup.com
-      from: "NDL Capital Group<onboarding@resend.dev>",
+    await transporter.sendMail({
+      from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: result.data.email,
       subject: "We received your message — NDL Capital Group",
       html: `
-        <h2>Hi ${result.data.firstName},</h2>
-        <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
-        <p>Best regards,<br/>NDL Capital Group</p>
-      `,
+    <h2>Hi ${result.data.firstName},</h2>
+    <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
+    <p>Best regards,<br/>NDL Capital Group</p>
+  `,
     });
 
     res.status(201).json({ success: true, id: contact.id });

@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jmanuel3/NDL-Capital-BackEnd#readme",
   "dependencies": {
+    "@getbrevo/brevo": "^5.0.4",
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-neon": "^7.8.0",
     "@prisma/client": "^7.8.0",
@@ -30,6 +31,7 @@
     "express-rate-limit": "^8.5.2",
     "googleapis": "^172.0.0",
     "helmet": "^8.2.0",
+    "nodemailer": "^8.0.10",
     "resend": "^6.12.3",
     "zod": "^4.4.3"
   },
@@ -38,6 +40,7 @@
     "@types/express": "^5.0.6",
     "@types/helmet": "^0.0.48",
     "@types/node": "^25.9.1",
+    "@types/nodemailer": "^8.0.0",
     "dotenv": "^17.4.2",
     "nodemon": "^3.1.14",
     "prisma": "^7.8.0",

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import resend from "../lib/resend";
+import transporter from "../lib/nodemailer";
 import { createReservationEvent } from "../lib/googleCalendar";
 
 const reservationSchema = z.object({
@@ -47,8 +47,8 @@ export const createReservation = async (
       message: result.data.message,
     });
 
-    await resend.emails.send({
-      from: "NDL Capital <onboarding@resend.dev>",
+    await transporter.sendMail({
+      from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: result.data.email,
       subject: "Your call is booked — NDL Capital Group",
       html: `

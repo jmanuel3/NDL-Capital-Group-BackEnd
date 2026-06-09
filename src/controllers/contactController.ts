@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import brevo from "../lib/brevo";
+import transporter from "../lib/nodemailer";
 
 const contactSchema = z.object({
   firstName: z.string().min(1),
@@ -30,15 +30,15 @@ export const createContact = async (
   try {
     const contact = await prisma.contact.create({ data: result.data });
 
-    await brevo.transactionalEmails.sendTransacEmail({
-      sender: { name: "NDL Capital Group", email: "info@ndlcapitalgroup.com" },
-      to: [{ email: result.data.email, name: result.data.firstName }],
+    await transporter.sendMail({
+      from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
+      to: result.data.email,
       subject: "We received your message — NDL Capital Group",
-      htmlContent: `
-        <h2>Hi ${result.data.firstName},</h2>
-        <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
-        <p>Best regards,<br/>NDL Capital Group</p>
-      `,
+      html: `
+    <h2>Hi ${result.data.firstName},</h2>
+    <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
+    <p>Best regards,<br/>NDL Capital Group</p>
+  `,
     });
 
     res.status(201).json({ success: true, id: contact.id });

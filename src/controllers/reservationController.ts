@@ -61,7 +61,7 @@ export const createReservation = async (
 
     await transporter.sendMail({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
-      to: "info@ndlcapitalgroup.com",
+      to: "ndlcapitalgroup@gmail.com",
       subject: "New reservation — NDL Capital Group",
       html: `
         <h2>New reservation from ${result.data.firstName} ${result.data.lastName}</h2>

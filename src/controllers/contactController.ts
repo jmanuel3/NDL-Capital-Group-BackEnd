@@ -41,7 +41,7 @@ export const createContact = async (
     });
     await transporter.sendMail({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
-      to: "info@ndlcapitalgroup.com",
+      to: "ndlcapitalgroup@gmail.com",
       subject: "New contact form submission — NDL Capital Group",
       html: `
     <h2>New message from ${result.data.firstName} ${result.data.lastName}</h2>

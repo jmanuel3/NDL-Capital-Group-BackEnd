@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import transporter from "../lib/nodemailer";
+import resend from "../lib/resend";
+import { escapeHtml } from "../lib/escapeHtml";
 
 const contactSchema = z.object({
   firstName: z.string().min(1),
@@ -29,29 +30,46 @@ export const createContact = async (
 
   try {
     const contact = await prisma.contact.create({ data: result.data });
-    await transporter.sendMail({
+
+    const firstName = escapeHtml(result.data.firstName);
+    const lastName = escapeHtml(result.data.lastName);
+    const email = escapeHtml(result.data.email);
+    const phone = escapeHtml(result.data.phone);
+    const company = escapeHtml(result.data.company);
+    const interest = escapeHtml(result.data.interest);
+    const message = escapeHtml(result.data.message);
+
+    const { error: userEmailError } = await resend.emails.send({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: result.data.email,
       subject: "We received your message — NDL Capital Group",
       html: `
-    <h2>Hi ${result.data.firstName},</h2>
+    <h2>Hi ${firstName},</h2>
     <p>Thank you for reaching out. Our team will get back to you within 24 hours.</p>
     <p>Best regards,<br/>NDL Capital Group</p>
   `,
     });
-    await transporter.sendMail({
+    if (userEmailError) {
+      console.error("Resend contact user email error:", userEmailError);
+    }
+
+    const { error: internalEmailError } = await resend.emails.send({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: "ndlcapitalgroup@gmail.com",
+      replyTo: result.data.email,
       subject: "New contact form submission — NDL Capital Group",
       html: `
-    <h2>New message from ${result.data.firstName} ${result.data.lastName}</h2>
-    <p><strong>Email:</strong> ${result.data.email}</p>
-    <p><strong>Phone:</strong> ${result.data.phone}</p>
-    <p><strong>Company:</strong> ${result.data.company || "—"}</p>
-    <p><strong>Interest:</strong> ${result.data.interest || "—"}</p>
-    <p><strong>Message:</strong> ${result.data.message}</p>
+    <h2>New message from ${firstName} ${lastName}</h2>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Phone:</strong> ${phone}</p>
+    <p><strong>Company:</strong> ${company || "—"}</p>
+    <p><strong>Interest:</strong> ${interest || "—"}</p>
+    <p><strong>Message:</strong> ${message}</p>
   `,
     });
+    if (internalEmailError) {
+      console.error("Resend contact internal email error:", internalEmailError);
+    }
 
     res.status(201).json({ success: true, id: contact.id });
   } catch (error) {

@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import prisma from "../lib/prisma";
 import { z } from "zod";
-import transporter from "../lib/nodemailer";
+import resend from "../lib/resend";
+import { escapeHtml } from "../lib/escapeHtml";
 import { createReservationEvent } from "../lib/googleCalendar";
 
 const reservationSchema = z.object({
@@ -47,33 +48,54 @@ export const createReservation = async (
       message: result.data.message,
     });
 
-    await transporter.sendMail({
+    const firstName = escapeHtml(result.data.firstName);
+    const lastName = escapeHtml(result.data.lastName);
+    const email = escapeHtml(result.data.email);
+    const phone = escapeHtml(result.data.phone);
+    const topic = escapeHtml(result.data.topic);
+    const message = escapeHtml(result.data.message);
+    const time = escapeHtml(result.data.time);
+    const formattedDate = new Date(result.data.date).toLocaleDateString(
+      "en-GB",
+    );
+
+    const { error: userEmailError } = await resend.emails.send({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: result.data.email,
       subject: "Your call is booked — NDL Capital Group",
       html: `
-        <h2>Hi ${result.data.firstName},</h2>
-        <p>Your call has been scheduled for ${new Date(result.data.date).toLocaleDateString("en-GB")} at ${result.data.time}.</p>
+        <h2>Hi ${firstName},</h2>
+        <p>Your call has been scheduled for ${formattedDate} at ${time}.</p>
         <p><strong>Google Meet link:</strong> <a href="${meetLink}">${meetLink}</a></p>
         <p>Best regards,<br/>NDL Capital Group</p>
       `,
     });
+    if (userEmailError) {
+      console.error("Resend reservation user email error:", userEmailError);
+    }
 
-    await transporter.sendMail({
+    const { error: internalEmailError } = await resend.emails.send({
       from: '"NDL Capital Group" <info@ndlcapitalgroup.com>',
       to: "ndlcapitalgroup@gmail.com",
+      replyTo: result.data.email,
       subject: "New reservation — NDL Capital Group",
       html: `
-        <h2>New reservation from ${result.data.firstName} ${result.data.lastName}</h2>
-        <p><strong>Email:</strong> ${result.data.email}</p>
-        <p><strong>Phone:</strong> ${result.data.phone}</p>
-        <p><strong>Topic:</strong> ${result.data.topic}</p>
-        <p><strong>Date:</strong> ${new Date(result.data.date).toLocaleDateString("en-GB")}</p>
-        <p><strong>Time:</strong> ${result.data.time}</p>
-        <p><strong>Message:</strong> ${result.data.message || "—"}</p>
+        <h2>New reservation from ${firstName} ${lastName}</h2>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${phone}</p>
+        <p><strong>Topic:</strong> ${topic}</p>
+        <p><strong>Date:</strong> ${formattedDate}</p>
+        <p><strong>Time:</strong> ${time}</p>
+        <p><strong>Message:</strong> ${message || "—"}</p>
         <p><strong>Google Meet link:</strong> <a href="${meetLink}">${meetLink}</a></p>
       `,
     });
+    if (internalEmailError) {
+      console.error(
+        "Resend reservation internal email error:",
+        internalEmailError,
+      );
+    }
 
     res.status(201).json({ success: true, id: reservation.id, meetLink });
   } catch (error) {
